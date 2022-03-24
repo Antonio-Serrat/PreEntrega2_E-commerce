@@ -16,7 +16,8 @@ const PORT = process.env.PORT | 8080
 const io = new Server(server)
 
 // Connect to LOCAL :  `${SCHEMA}://${HOSTNAME}:${DBPORT}/${DATABASE}`
-mongoose.connect("mongodb+srv://ToniSrt:Of0sGxyExuZoXopt@cluster0.q4tpu.mongodb.net/ecommerce?retryWrites=true&w=majority").then(() => {
+// Connect to CLOUD : "mongodb+srv://<your username>:<you pass>@<your hosting>"/<your database>?retryWrites=true&w=majority"
+mongoose.connect(`${SCHEMA}://${HOSTNAME}:${DBPORT}/${DATABASE}`).then(() => {
   console.log('connected to mongo')
 }).catch((e) => console.log('error on mongo', e))
 
