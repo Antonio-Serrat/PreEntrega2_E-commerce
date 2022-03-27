@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const productModel = require('./product')
 class Cart {
     constructor() {
         const schema = new mongoose.Schema({
@@ -52,14 +53,14 @@ class Cart {
 
     async addProductToCart(id, prodId) {
         try {
+            const product = await productModel.getById(req.params.idProd)
+            if(!product){
+                return false;
+            }
             const cart = await this.model.find({_id: id})
             const cartProducts = cart[0].products
-            console.log(cartProducts)
             const validateProd = cartProducts.find(prodct => prodct.productId === prodId)
             const indexProd = cartProducts.indexOf(validateProd)
-            console.log("UEEEEEEEEEPAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            console.log(validateProd)
-            console.log(indexProd)
             if (validateProd) {
                 validateProd.cantidad += 1
                 cartProducts.splice(indexProd, 1, validateProd)
@@ -71,23 +72,29 @@ class Cart {
                 { _id: id },
                 { $set: cart[0] }
             )
+            return true;
 
         } catch (error) {
             console.log(error)
-            return error
+            return false
         }
     }
 
-    async addProductToNewCart(product) {
+    async addProductToNewCart() {
         try {
+            const product = await productModel.getById(req.params.id)
+            if(!product){
+                return {error:false, added:false}
+            }
             let newCart= {
                 createDate: Date.now(),
                 products: [{productId: product.id}]    
             }
             const cart = await this.model.create(newCart)
-            return cart.id
+            return {error:false, added:true, cartId:cart.id}
         } catch (error) {
-            return error
+            console.log(error)
+            return {error:true}
         }
     }
 

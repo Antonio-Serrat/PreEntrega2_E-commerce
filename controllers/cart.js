@@ -39,11 +39,10 @@ module.exports =  {
     // Add a product to cart
     postProductToExistCart: async (req, res) => {
         try {
-            const product = await productModel.getById(req.params.idProd)
-            if(!product)  {
+            const added = await cartModule.addProductToCart(req.params.id, product.id)
+            if(!added)  {
                 res.status(404).send({ error: 'El id de producto no existe' })
             }else{
-                await cartModule.addProductToCart(req.params.id, product.id)
                 res.status(200).send({ success: 'Se agrego con exito el nuevo producto al carrito' })
             }
         } catch (error) {
@@ -57,11 +56,14 @@ module.exports =  {
     // Create a cart with a product
     postProductToNewCart: async (req, res) => {
         try {
-            const product = await productModel.getById(req.params.id)
-            if(!product) {
+            const response  = await cartModule.addProductToNewCart(product)
+            if(response.error){
+                throw error;
+            }
+            else if(!response.added) {
                 res.status(404).send({ error: 'El id de producto no existe' })
             }else{
-                const idCart = await cartModule.addProductToNewCart(product)
+                const idCart = response.cartId
                 res.status(200).send({ success: 'Se agrego con exito el nuevo producto al carrito', idCart:`${idCart}`})  
             } 
         } catch (error) {
