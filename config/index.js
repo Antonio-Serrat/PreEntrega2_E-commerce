@@ -1,6 +1,7 @@
+const local = require('./envLocal')
+const cloud = require('./envCloud')
+
 module.exports = {
-    HOSTNAME: "localhost",
-    SCHEMA: "mongodb",
-    DATABASE: "ecommerce",
-    DBPORT: "27017"
+    local,
+    cloud
 }

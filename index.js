@@ -7,14 +7,16 @@ const { engine } = require('express-handlebars');
 const productsRouter = require("./routes/products")
 const cartRouter = require('./routes/cart');
 const authMiddleware = require('./middlewares/getAuth')
-const { HOSTNAME, SCHEMA, DATABASE, DBPORT} = require('./config')
+const { local } = require('./config')
+const { cloud } = require('./config')
 
 
 
-
-// Connect to LOCAL :  `${SCHEMA}://${HOSTNAME}:${DBPORT}/${DATABASE}`
-// Connect to CLOUD : "mongodb+srv://<your username>:<you pass>@<your hosting>"/<your database>?retryWrites=true&w=majority"
-mongoose.connect("mongodb+srv://ToniSrt:chRbniGZjqFxjuL1@cluster0.q4tpu.mongodb.net/ecommerce?retryWrites=true&w=majority").then(() => {
+// Connect to LOCAL 
+const localConnection=  `${local.SCHEMA}://${local.HOSTNAME}:${local.DBPORT}/${local.DATABASE}`
+// Connect to CLOUD 
+const cloudConnection = `${cloud.SCHEMA}://${cloud.USER}:${cloud.PASSWORD}@${cloud.HOSTNAME}/${cloud.DATABASE}?retryWrites=true&w=majority`
+mongoose.connect(cloudConnection).then(() => {
   console.log('connected to mongo')
 
   const app = express();
