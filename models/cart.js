@@ -3,9 +3,9 @@ class Cart {
     constructor() {
         const schema = new mongoose.Schema({
             createdDate: {type: Number, default: Date.now()},
-            products: Object
+            products: Array     
         })
-        this.model = mongoose.model("cart", schema)
+        this.model = mongoose.model("carts", schema)
     }
 
     async save() {
@@ -25,7 +25,7 @@ class Cart {
         try {
             const cart = await this.model.find({_id: id})
             if (cart[0]) {
-               await this.model.deleteOne({_id: id})
+                await this.model.deleteOne({_id: id})
                 return true
             } else {
                 return false
@@ -39,36 +39,41 @@ class Cart {
     async getProductsFromCart(id) {
         try {
             const cart = await this.model.find({_id: id})
+            console.log(cart)
             if (!cart[0]) {
                 return false
             } else {
-                return cart.products
+                return cart
             }
         } catch (error) {
             return error
         }
     }
 
-    async addProductToCart(id, product) {
+    async addProductToCart(id, prodId) {
         try {
             const cart = await this.model.find({_id: id})
-            const cartProducts = cart.products
-
-            const validateProd = cartProducts.find(prodct => prodct.id === product.id)
+            const cartProducts = cart[0].products
+            console.log(cartProducts)
+            const validateProd = cartProducts.find(prodct => prodct.productId === prodId)
             const indexProd = cartProducts.indexOf(validateProd)
+            console.log("UEEEEEEEEEPAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            console.log(validateProd)
+            console.log(indexProd)
             if (validateProd) {
-                let cant = 1
-                validateProd.cant = cant + 1
+                validateProd.cantidad += 1
                 cartProducts.splice(indexProd, 1, validateProd)
             } else {
-                cart.products.push(product)
+                cartProducts.push({productId: prodId, cantidad: 1})
             }
+            console.log(cart[0])
             await this.model.findOneAndUpdate(
-                {_id: id },
-                { $set: cart }
+                { _id: id },
+                { $set: cart[0] }
             )
 
         } catch (error) {
+            console.log(error)
             return error
         }
     }
@@ -77,9 +82,10 @@ class Cart {
         try {
             let newCart= {
                 createDate: Date.now(),
-                products: [product]    
+                products: [{productId: product.id}]    
             }
-            await this.model.create(newCart)
+            const cart = await this.model.create(newCart)
+            return cart.id
         } catch (error) {
             return error
         }
@@ -87,18 +93,18 @@ class Cart {
 
     async deleteProductFromCart(idC, idP) {
         try {
-            const cart = await this.model.find({_id: idC})
-            if (!cart) {
+            const cart= await this.model.find({_id: idC})
+            if (!cart[0]) {
                 return false;
             }
 
-            const allProducts = cart.products
-            const product = allProducts.find(product => product.id == idP)
+            const allProducts = cart[0].products
+            const product = allProducts.find(product => product.productId == idP)
             if (!product) {
                 return false
             }
-            if (product.cant > 1) {
-                product.cant = product.cant - 1
+            if (product.cantidad > 1) {
+                product.cantidad -=  1
                 const index = allProducts.indexOf(product)
                 allProducts.splice(index, 1, product)
             } else {
@@ -107,7 +113,7 @@ class Cart {
             }
             await this.model.findOneAndUpdate(
                 { _id: idC },
-                { $set: cart} 
+                { $set: cart[0] } 
             )
             return true
         } catch (error) {

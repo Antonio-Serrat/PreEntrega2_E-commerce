@@ -7,10 +7,10 @@ module.exports =  {
     // Create new Cart
     post: async (req, res) => {
         try {
-            const id_cart = await cartModule.save()
-            res.status(201).send({ succes: 'Carrito creado', id: id_cart })
+            const idCart = await cartModule.save()
+            res.status(201).send({ succes: 'Carrito creado', id: idCart })
         } catch (e) {
-            res.status(400).send({
+            res.status(500).send({
                 error: 'Problema al intentar crear un nuevo carrito ',
                 desrciption: e
             })
@@ -22,10 +22,14 @@ module.exports =  {
     getProducts: async (req, res) => {
         try {
             const products = await cartModule.getProductsFromCart(req.params.id)
-            !products ? res.status(404).send({ error: 'El carrito no existe o el id es erroneo' })
-                : res.status(200).send(products)
+            console.log(products)
+            if(!products) {
+                res.status(404).send({ error: 'El carrito no existe o el id es erroneo' })
+             }else{
+                 res.status(200).send(products)
+             }
         } catch (error) {
-            res.status(400).send({
+            res.status(500).send({
                 error: 'Problema al intentar listar los productos el carrito ',
                 desrciption: error
             })
@@ -35,11 +39,13 @@ module.exports =  {
     // Add a product to cart
     postProductToExistCart: async (req, res) => {
         try {
-            const product = await productModel.getById(req.params.id_prod)
-            console.log(product)
-            !product ? res.status(404).send({ error: 'El id de producto no existe' })
-                : await cartModule.addProductToCart(req.params.id, product)
+            const product = await productModel.getById(req.params.idProd)
+            if(!product)  {
+                res.status(404).send({ error: 'El id de producto no existe' })
+            }else{
+                await cartModule.addProductToCart(req.params.id, product.id)
                 res.status(200).send({ success: 'Se agrego con exito el nuevo producto al carrito' })
+            }
         } catch (error) {
             res.status(500).send({
                 error: 'Problema al intentar agregar el producto al carrito ',
@@ -52,10 +58,14 @@ module.exports =  {
     postProductToNewCart: async (req, res) => {
         try {
             const product = await productModel.getById(req.params.id)
-            !product ? res.status(404).send({ error: 'El id de producto no existe' })
-                : await cartModule.addProductToNewCart(product)
-            res.status(200).send({ success: 'Se agrego con exito el nuevo producto al carrito' })
+            if(!product) {
+                res.status(404).send({ error: 'El id de producto no existe' })
+            }else{
+                const idCart = await cartModule.addProductToNewCart(product)
+                res.status(200).send({ success: 'Se agrego con exito el nuevo producto al carrito', idCart:`${idCart}`})  
+            } 
         } catch (error) {
+            console.log(error)
             res.status(500).send({
                 error: 'Problema al intentar agregar el producto al carrito ',
                 desrciption: error
@@ -66,9 +76,12 @@ module.exports =  {
     // Delete product from cart
     deleteProductFromCart: async (req, res) => {
         try {
-            const deleted = await cartModule.deleteProductFromCart(req.params.id, req.params.id_prod)
-            !deleted ? res.status(404).send({ error: 'El id del carrito o del producto no existe' })
-            : res.status(200).send({ success: 'Se elimino el producto del carrito con exito' })
+            const deleted = await cartModule.deleteProductFromCart(req.params.id, req.params.idProd)
+            if (!deleted){
+                res.status(404).send({ error: 'El id del carrito o del producto no existe' })
+            }else{
+                res.status(200).send({ success: 'Se elimino el producto del carrito con exito' })
+            } 
         } catch (error) {
             res.status(500).send({
                 error: 'Problema al intentar eliminar el producto del carrito ',
@@ -81,10 +94,13 @@ module.exports =  {
     delete: async (req, res) => {
         try {
             const deleted = await cartModule.deleteCartById(req.params.id)
-            !deleted ? res.status(404).send({ error: 'El carrito no existe' })
-                : res.status(201).send({ succes: 'Carrito eliminado' })
+            if (!deleted) { 
+                res.status(404).send({ error: 'El carrito no existe' })
+             }else{
+                res.status(201).send({ succes: 'Carrito eliminado' })
+             }
         } catch (e) {
-            res.status(400).send({
+            res.status(500).send({
                 error: 'Problema al intentar eliminar el carrito ',
                 desrciption: e
             })

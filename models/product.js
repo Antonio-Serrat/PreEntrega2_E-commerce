@@ -12,7 +12,7 @@ class Product {
             createdDate: {type: Number, default: Date.now()},
             updatedDate : {type: Number, default: Date.now()}
         })
-        this.model = mongoose.model("product", schema)
+        this.model = mongoose.model("products", schema)
     }
 
     async save(name, createdDate, price, description, code, stock, thumbnail) {
